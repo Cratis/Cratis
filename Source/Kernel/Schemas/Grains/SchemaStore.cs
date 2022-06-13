@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Aksio.Cratis.DependencyInversion;
+using Aksio.Cratis.Execution;
 using Aksio.Cratis.Schemas;
 using NJsonSchema;
 using Orleans;
@@ -30,5 +31,11 @@ public class SchemaStore : Grain, ISchemaStore
         var jsonSchema = await JsonSchema.FromJsonAsync(schema);
         jsonSchema.EnsureCorrectMetadata();
         await _underlyingSchemaStore().Register(type, friendlyName, jsonSchema);
+    }
+
+    /// <inheritdoc/>
+    public Task<IEnumerable<MicroserviceId>> GetMicroservicesThatProduceEventType(EventType type)
+    {
+        return Task.FromResult(Array.Empty<MicroserviceId>().AsEnumerable());
     }
 }
