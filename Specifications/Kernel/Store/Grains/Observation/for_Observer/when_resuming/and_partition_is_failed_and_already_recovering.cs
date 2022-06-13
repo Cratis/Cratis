@@ -5,13 +5,14 @@ using Orleans.Streams;
 
 namespace Aksio.Cratis.Events.Store.Grains.Observation.for_Observer.when_resuming;
 
-public class and_partition_is_failed_but_recovering : given.an_observer_and_two_event_types
+public class and_partition_is_failed_and_already_recovering : given.an_observer_and_two_event_types
 {
     const string partition = "ca517fc7-6a93-4878-9ccd-8e5b94b264d5";
-    void Establish()
+    async Task Establish()
     {
         state.FailPartition(partition, 0, Array.Empty<string>(), string.Empty);
-        state.StartRecoveringPartition(partition);
+        await observer.TryResumePartition(partition);
+        sequence_stream.Reset();
     }
 
     async Task Because() => await observer.TryResumePartition(partition);

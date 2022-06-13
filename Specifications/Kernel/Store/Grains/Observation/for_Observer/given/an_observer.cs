@@ -25,7 +25,7 @@ public class an_observer : GrainSpecification<ObserverState>
     protected List<IAsyncObserver<AppendedEvent>> observers;
     protected MicroserviceId microservice_id;
     protected TenantId tenant_id;
-    protected EventSequenceId event_sequence_id;
+    protected EventSequenceId event_sequence_id = EventSequenceId.Unspecified;
     protected ObserverNamespace observer_namespace;
 
     protected override Grain GetGrainInstance()
@@ -42,7 +42,12 @@ public class an_observer : GrainSpecification<ObserverState>
 
         microservice_id = Guid.NewGuid();
         tenant_id = Guid.NewGuid();
-        event_sequence_id = EventSequenceId.Log;
+
+        if (event_sequence_id == EventSequenceId.Unspecified)
+        {
+            event_sequence_id = EventSequenceId.Log;
+        }
+        state.EventSequenceId = event_sequence_id;
         var key = new ObserverKey(microservice_id, tenant_id, event_sequence_id).ToString();
         observer_id = Guid.NewGuid();
         grain_identity.Setup(_ => _.GetPrimaryKey(out key)).Returns(observer_id);
