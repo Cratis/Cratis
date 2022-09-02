@@ -9,6 +9,7 @@ using Aksio.Cratis.Dynamic;
 using Aksio.Cratis.Events.Projections.Definitions;
 using Aksio.Cratis.Events.Store;
 using Aksio.Cratis.Execution;
+using Aksio.Cratis.Properties;
 using Orleans;
 using EngineProjection = Aksio.Cratis.Events.Projections.IProjection;
 
@@ -55,25 +56,24 @@ public class ImmediateProjection : Grain, IImmediateProjection
     }
 
     /// <inheritdoc/>
-    public async Task<JsonObject> GetModelInstance(ProjectionDefinition projectionDefinition)
+    public async Task<ImmediateProjectionResult> GetModelInstance(ProjectionDefinition projectionDefinition)
     {
         if (_projectionKey is null)
         {
-            return new JsonObject();
+            return new ImmediateProjectionResult(new JsonObject(), Array.Empty<PropertyPath>(), 0);
         }
 
-        if (_projection is null)
-        {
-            // TODO: This can be optimized by extracting out to a separate singleton service that holds these in-memory
-            _projection = await _projectionFactory.CreateFrom(projectionDefinition);
-        }
+        _projection ??= await _projectionFactory.CreateFrom(projectionDefinition);
 
         // TODO: This is a temporary work-around till we fix #264 & #265
         _executionContextManager.Establish(_projectionKey.TenantId, CorrelationId.New(), _projectionKey.MicroserviceId);
 
+        var affectedProperties = new HashSet<PropertyPath>();
+
         var modelKey = _projectionKey.ModelKey.IsSpecified ? (EventSourceId)_projectionKey.ModelKey.Value : null!;
 
         var cursor = await _eventProvider.GetFromSequenceNumber(EventSequenceId.Log, EventSequenceNumber.First, modelKey, _projection.EventTypes);
+        var projectedEventsCount = 0;
         var state = new ExpandoObject();
         while (await cursor.MoveNext())
         {
@@ -91,11 +91,18 @@ public class ImmediateProjection : Grain, IImmediateProjection
 
                 await HandleEventFor(_projection!, context);
 
+                projectedEventsCount++;
+
                 foreach (var change in changeset.Changes)
                 {
                     switch (change)
                     {
                         case PropertiesChanged<ExpandoObject> propertiesChanged:
+                            foreach (var difference in propertiesChanged.Differences)
+                            {
+                                affectedProperties.Add(difference.PropertyPath);
+                            }
+
                             state = state.OverwriteWith((change.State as ExpandoObject)!);
                             break;
 
@@ -109,9 +116,10 @@ public class ImmediateProjection : Grain, IImmediateProjection
         }
 
         // TODO: Conversion from ExpandoObject to JsonObject can be improved - they're effectively both just Dictionary<string, object>
+        (state as IDictionary<string, object>)!["id"] = modelKey.Value;
         var json = JsonSerializer.Serialize(state);
         var jsonObject = JsonNode.Parse(json)!;
-        return (jsonObject as JsonObject)!;
+        return new((jsonObject as JsonObject)!, affectedProperties, projectedEventsCount);
     }
 
     async Task HandleEventFor(EngineProjection projection, ProjectionEventContext context)

@@ -51,6 +51,7 @@
     "typescript.tsdk": "./node_modules/typescript/lib",
     "cSpell.words": [
         "aksioinsurtech",
+        "appsettings",
         "Autofac",
         "Brotli",
         "Bson",
@@ -73,6 +74,7 @@
         "middlewares",
         "Namotion",
         "Newtonsoft",
+        "notnull",
         "PII",
         "Pkcs",
         "propertymapper",
@@ -83,6 +85,7 @@
         "tinycolor",
         "typeparam",
         "upcaster",
-        "upserted"
+        "upserted",
+        "Xunit"
     ]
 }

@@ -42,4 +42,15 @@ public static partial class ObserverLogMessages
 
     [LoggerMessage(10, LogLevel.Debug, "Connecting inbox for observer '{observerId}' microservice '{MicroserviceId}' and tenant '{TenantId}' to outbox of microservice '{SourceMicroserviceId}'")]
     internal static partial void ImplicitlyConnectingInbox(this ILogger logger, Guid observerId, Guid microserviceId, Guid tenantId, Guid sourceMicroserviceId);
+    [LoggerMessage(11, LogLevel.Debug, "Activating observer {ObserverId} for sequence {EventSequenceId} for microservice '{MicroserviceId}' and tenant '{TenantId}' - observing source microservice '{SourceMicroserviceId}' and tenant '{SourceTenantId}'")]
+    internal static partial void Activating(this ILogger logger, Guid observerId, Guid eventSequenceId, Guid microserviceId, Guid tenantId, Guid sourceMicroserviceId, Guid sourceTenantId);
+
+    [LoggerMessage(12, LogLevel.Trace, "Subscribing to stream for observer {ObserverId} for sequence {EventSequenceId} for microservice '{MicroserviceId}' and tenant '{TenantId}' - stream {StreamId} - namespace {StreamNamespace}")]
+    internal static partial void SubscribingToStream(this ILogger logger, Guid observerId, Guid eventSequenceId, Guid microserviceId, Guid tenantId, Guid streamId, string streamNamespace);
+
+    [LoggerMessage(13, LogLevel.Trace, "Event of type {EventTypeId} received for observer {ObserverId} from sequence {EventSequenceId} for microservice '{MicroserviceId}' and tenant '{TenantId}'")]
+    internal static partial void EventReceived(this ILogger logger, Guid eventTypeId, Guid observerId, Guid eventSequenceId, Guid microserviceId, Guid tenantId);
+
+    [LoggerMessage(14, LogLevel.Debug, "Deactivating observer {ObserverId} for sequence {EventSequenceId} for microservice '{MicroserviceId}' and tenant '{TenantId}' - observing source microservice '{SourceMicroserviceId}' and tenant '{SourceTenantId}'")]
+    internal static partial void Deactivating(this ILogger logger, Guid observerId, Guid eventSequenceId, Guid microserviceId, Guid tenantId, Guid sourceMicroserviceId, Guid sourceTenantId);
 }

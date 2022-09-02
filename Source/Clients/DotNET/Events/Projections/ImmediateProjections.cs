@@ -66,9 +66,8 @@ public class ImmediateProjections : IImmediateProjections
 
         var key = new ImmediateProjectionKey(_executionContextManager.Current.MicroserviceId, _executionContextManager.Current.TenantId, EventSequenceId.Log, modelKey);
         var projection = _clusterClient.GetGrain<IImmediateProjection>(ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Instance!.Identifier, key);
-        var json = await projection.GetModelInstance(ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Definition!);
-
-        return json.Deserialize<TModel>(_jsonSerializerOptions)!;
+        var result = await projection.GetModelInstance(ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Definition!);
+        return result.Model.Deserialize<TModel>(_jsonSerializerOptions)!;
     }
 
     void HandleProjectionTypeCache<TModel>()
@@ -76,6 +75,11 @@ public class ImmediateProjections : IImmediateProjections
         if (ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Instance is null)
         {
             var projectionType = _types.FindSingle<IImmediateProjectionFor<TModel>>();
+            if (projectionType is null)
+            {
+                throw new MissingImmediateProjectionForModel(typeof(TModel));
+            }
+
             ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Instance = (_serviceProvider.GetService(projectionType) as IImmediateProjectionFor<TModel>)!;
             var builder = new ProjectionBuilderFor<TModel>(
                 ImmediateProjectionsCache<IImmediateProjectionFor<TModel>>.Instance.Identifier,

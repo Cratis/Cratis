@@ -2,10 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Aksio.Cratis.Changes;
+using Aksio.Cratis.Properties;
 
 namespace Aksio.Cratis.Integration.for_ImportOperations.given;
 
-public class no_changes : all_dependencies
+public class no_changes : all_dependencies_for<SomeEvent>
 {
     protected Model initial;
     protected ExternalModel incoming;
@@ -17,7 +18,7 @@ public class no_changes : all_dependencies
         initial = new(42, "Forty Two");
         incoming = new(42, "Forty Two");
 
-        projection.Setup(_ => _.GetById(key)).Returns(Task.FromResult(initial));
+        projection.Setup(_ => _.GetById(key)).Returns(Task.FromResult(new AdapterProjectionResult<Model>(initial, Array.Empty<PropertyPath>(), 0)));
         mapper.Setup(_ => _.Map<Model>(incoming)).Returns(initial);
 
         objects_comparer = new();
@@ -28,7 +29,8 @@ public class no_changes : all_dependencies
             projection.Object,
             mapper.Object,
             objects_comparer.Object,
-            event_log.Object
+            event_log.Object,
+            event_outbox.Object
         );
     }
 }
