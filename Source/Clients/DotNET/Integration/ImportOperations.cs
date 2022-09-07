@@ -79,7 +79,7 @@ public class ImportOperations<TModel, TExternalModel> : IImportOperations<TModel
         {
             await _eventLog.Append(eventSourceId!, @event);
 
-            if (@event.GetType().GetCustomAttribute<EventTypeAttribute>()?.IsPublic ?? false)
+            if (@event.GetType().GetEventType().IsPublic)
             {
                 await _eventOutbox.Append(eventSourceId!, @event);
             }
