@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reactive.Linq;
 using System.Reflection;
 using Aksio.Cratis.Changes;
+using Aksio.Cratis.Events;
 using Aksio.Cratis.Reflection;
 using AutoMapper;
 
@@ -60,10 +61,10 @@ public static class ImportBuilderExtensions
     /// <param name="builder"><see cref="IImportBuilderFor{TModel, TExternalModel}"/> to build the filter for.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> WhenModelDoesNotExist<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelDoesNotExist<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder)
     {
-        return builder.Where(_ => _.InitialProjectionResult.ProjectedEventsCount == 0 && !_.InitialProjectionResult.AffectedProperties.Any());
+        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => _.InitialProjectionResult.ProjectedEventsCount == 0 && !_.InitialProjectionResult.AffectedProperties.Any()));
     }
 
     /// <summary>
@@ -73,11 +74,11 @@ public static class ImportBuilderExtensions
     /// <param name="properties">Properties as expressions to look for if was set on model.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> WhenModelPropertiesAreSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelPropertiesAreSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
-        return builder.Where(_ => _.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_)));
+        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => _.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))));
     }
 
     /// <summary>
@@ -87,62 +88,63 @@ public static class ImportBuilderExtensions
     /// <param name="properties">Properties as expressions to look for if was set on model.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> WhenModelPropertiesAreNotSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelPropertiesAreNotSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
-        return builder.Where(_ => !_.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_)));
+        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => !_.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))));
     }
 
     /// <summary>
     /// Filter down to when one of the properties defined changes.
     /// </summary>
-    /// <param name="context">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
+    /// <param name="builder">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
     /// <param name="properties">Properties as expressions to look for changes on.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> WithProperties<TModel, TExternalModel>(this IObservable<ImportContext<TModel, TExternalModel>> context, params Expression<Func<TModel, object>>[] properties)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> WithProperties<TModel, TExternalModel>(this IImportActionBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
 
-        return context.Where(_ =>
+        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ =>
         {
             var changes = _.Changeset.Changes.Where(_ => _ is PropertiesChanged<TModel>).Select(_ => _ as PropertiesChanged<TModel>);
             return changes.Any(_ => _!.Differences.Any(_ => propertyPaths.Any(p => _.PropertyPath.Path.StartsWith(p.Path))));
-        });
+        }), builder);
     }
 
     /// <summary>
     /// Filter down to when one of the properties defined changes from a value to a null value.
     /// </summary>
-    /// <param name="context">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
+    /// <param name="builder">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
     /// <param name="properties">Properties as expressions to look for changes on.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> WithPropertiesBecomingNull<TModel, TExternalModel>(this IObservable<ImportContext<TModel, TExternalModel>> context, params Expression<Func<TModel, object>>[] properties)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> WithPropertiesBecomingNull<TModel, TExternalModel>(this IImportActionBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
 
-        return context.Where(_ =>
+        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ =>
         {
             var changes = _.Changeset.Changes.Where(_ => _ is PropertiesChanged<TModel>).Select(_ => _ as PropertiesChanged<TModel>);
             return changes.Any(_ => _!.Differences.Any(_ => _.Original is not null && _.Changed is null && propertyPaths.Any(p => _.PropertyPath.Path.StartsWith(p.Path))));
-        });
+        }), builder);
     }
 
     /// <summary>
     /// Append an event by automatically mapping property names matching from the model onto the event.
     /// </summary>
-    /// <param name="context">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
+    /// <param name="builder">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
     /// <typeparam name="TEvent">Type of event to append.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> AppendEvent<TModel, TExternalModel, TEvent>(this IObservable<ImportContext<TModel, TExternalModel>> context)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> AppendEvent<TModel, TExternalModel, TEvent>(this IImportActionBuilderFor<TModel, TExternalModel> builder)
     {
-        context.Subscribe(_ =>
+        builder.AddProducingEventType(typeof(TEvent).GetEventType());
+        builder.Subscribe(_ =>
         {
             foreach (var change in _.Changeset.Changes.Where(_ => _ is PropertiesChanged<TModel>).Select(_ => _ as PropertiesChanged<TModel>))
             {
@@ -158,21 +160,22 @@ public static class ImportBuilderExtensions
             }
         });
 
-        return context;
+        return builder;
     }
 
     /// <summary>
     /// Append an event through calling a callback that will be responsible for creating an instance of the event.
     /// </summary>
-    /// <param name="context">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
+    /// <param name="builder">Observable of the <see cref="ImportContext{TModel, TExternalModel}"/>.</param>
     /// <param name="creationCallback">Callback for creating the instance.</param>
     /// <typeparam name="TModel">Type of model.</typeparam>
     /// <typeparam name="TExternalModel">Type of external model.</typeparam>
     /// <typeparam name="TEvent">Type of event to append.</typeparam>
-    /// <returns>Observable for chaining.</returns>
-    public static IObservable<ImportContext<TModel, TExternalModel>> AppendEvent<TModel, TExternalModel, TEvent>(this IObservable<ImportContext<TModel, TExternalModel>> context, Func<ImportContext<TModel, TExternalModel>, TEvent> creationCallback)
+    /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
+    public static IImportActionBuilderFor<TModel, TExternalModel> AppendEvent<TModel, TExternalModel, TEvent>(this IImportActionBuilderFor<TModel, TExternalModel> builder, Func<ImportContext<TModel, TExternalModel>, TEvent> creationCallback)
     {
-        context.Subscribe(_ => _.Events.Add(creationCallback(_)!));
-        return context;
+        builder.AddProducingEventType(typeof(TEvent).GetEventType());
+        builder.Subscribe(_ => _.Events.Add(creationCallback(_)!));
+        return builder;
     }
 }
