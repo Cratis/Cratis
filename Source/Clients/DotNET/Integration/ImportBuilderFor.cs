@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Reactive.Subjects;
+using Aksio.Cratis.Events;
 
 namespace Aksio.Cratis.Integration;
 
@@ -13,6 +14,7 @@ namespace Aksio.Cratis.Integration;
 public class ImportBuilderFor<TModel, TExternalModel> : IImportBuilderFor<TModel, TExternalModel>
 {
     readonly Subject<ImportContext<TModel, TExternalModel>> _importContexts;
+    readonly List<EventType> _eventTypes = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImportBuilderFor{TModel, TExternalModel}"/> class.
@@ -22,6 +24,12 @@ public class ImportBuilderFor<TModel, TExternalModel> : IImportBuilderFor<TModel
     {
         _importContexts = importContexts;
     }
+
+    /// <inheritdoc/>
+    public IImportActionBuilderFor<TModel, TExternalModel>? Parent => null;
+
+    /// <inheritdoc/>
+    public void AddProducingEventType(EventType eventType) => _eventTypes.Add(eventType);
 
     /// <inheritdoc/>
     public IDisposable Subscribe(IObserver<ImportContext<TModel, TExternalModel>> observer) => _importContexts.Subscribe(observer);

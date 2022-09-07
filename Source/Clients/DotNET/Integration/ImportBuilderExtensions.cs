@@ -64,7 +64,9 @@ public static class ImportBuilderExtensions
     /// <returns><see cref="IImportActionBuilderFor{TModel, TExternalModel}"/> for chaining.</returns>
     public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelDoesNotExist<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder)
     {
-        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => _.InitialProjectionResult.ProjectedEventsCount == 0 && !_.InitialProjectionResult.AffectedProperties.Any()));
+        return new ImportActionBuilderFor<TModel, TExternalModel>(
+            builder.Where(_ => _.InitialProjectionResult.ProjectedEventsCount == 0 && !_.InitialProjectionResult.AffectedProperties.Any()),
+            builder);
     }
 
     /// <summary>
@@ -78,7 +80,9 @@ public static class ImportBuilderExtensions
     public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelPropertiesAreSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
-        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => _.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))));
+        return new ImportActionBuilderFor<TModel, TExternalModel>(
+            builder.Where(_ => _.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))),
+            builder);
     }
 
     /// <summary>
@@ -92,7 +96,9 @@ public static class ImportBuilderExtensions
     public static IImportActionBuilderFor<TModel, TExternalModel> WhenModelPropertiesAreNotSet<TModel, TExternalModel>(this IImportBuilderFor<TModel, TExternalModel> builder, params Expression<Func<TModel, object>>[] properties)
     {
         var propertyPaths = properties.Select(_ => _.GetPropertyPath()).ToArray();
-        return new ImportActionBuilderFor<TModel, TExternalModel>(builder.Where(_ => !_.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))));
+        return new ImportActionBuilderFor<TModel, TExternalModel>(
+            builder.Where(_ => !_.InitialProjectionResult.AffectedProperties.Any(_ => propertyPaths.Contains(_))),
+            builder);
     }
 
     /// <summary>
