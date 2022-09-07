@@ -1,3 +1,32 @@
+# [v6.10.24] - 2022-9-6 [PR: #472](https://github.com/aksio-insurtech/Cratis/pull/472)
+
+### Fixed
+
+- Reverting the inclusion of PDB files. Relying on source link and .snupkg. 
+
+
+# [v6.10.22] - 2022-9-2 [PR: #469](https://github.com/aksio-insurtech/Cratis/pull/469)
+
+
+
+# [v6.10.20] - 2022-9-2 [PR: #467](https://github.com/aksio-insurtech/Cratis/pull/467)
+
+
+
+# [v6.10.19] - 2022-9-2 [PR: #466](https://github.com/aksio-insurtech/Cratis/pull/466)
+
+### Fixed
+
+- Fixing cache keys for the data used for transfer between jobs, so that we actually get the artifacts built.
+
+
+# [v6.10.18] - 2022-9-2 [PR: #465](https://github.com/aksio-insurtech/Cratis/pull/465)
+
+### Fixed
+
+- Taking out `appsettings.json` from the built Docker images. One needs now to configure this and mount it in for logging and other things.
+
+
 # [v6.10.17] - 2022-9-2 [PR: #464](https://github.com/aksio-insurtech/Cratis/pull/464)
 
 ### Fixed
