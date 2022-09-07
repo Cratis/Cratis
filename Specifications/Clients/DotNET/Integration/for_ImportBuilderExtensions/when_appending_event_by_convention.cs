@@ -7,7 +7,7 @@ namespace Aksio.Cratis.Integration.for_ImportBuilderExtensions;
 
 public class when_appending_event_by_convention : given.changes_on_two_properties
 {
-    void Establish() => subject.AppendEvent<Model, ExternalModel, SomeEvent>();
+    void Establish() => action_builder.AppendEvent<Model, ExternalModel, SomeEvent>();
 
     void Because() => subject.OnNext(new ImportContext<Model, ExternalModel>(new AdapterProjectionResult<Model>(new(0, string.Empty), Array.Empty<PropertyPath>(), 0), changeset, events_to_append));
 

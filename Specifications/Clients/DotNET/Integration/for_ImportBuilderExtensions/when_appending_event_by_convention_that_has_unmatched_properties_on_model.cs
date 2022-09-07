@@ -9,7 +9,7 @@ public class when_appending_event_by_convention_that_has_unmatched_properties_on
 {
     Exception result;
 
-    void Establish() => subject.AppendEvent<Model, ExternalModel, SomeEventWithMoreProperties>();
+    void Establish() => action_builder.AppendEvent<Model, ExternalModel, SomeEventWithMoreProperties>();
 
     void Because() => result = Catch.Exception(() => subject.OnNext(new ImportContext<Model, ExternalModel>(
         new AdapterProjectionResult<Model>(new(0, string.Empty), Array.Empty<PropertyPath>(), 0), changeset, events_to_append)));

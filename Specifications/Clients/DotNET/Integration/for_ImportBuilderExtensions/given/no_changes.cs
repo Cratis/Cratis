@@ -9,6 +9,7 @@ namespace Aksio.Cratis.Integration.for_ImportBuilderExtensions.given;
 public class no_changes : Specification
 {
     protected IImportBuilderFor<Model, ExternalModel> import_builder;
+    protected IImportActionBuilderFor<Model, ExternalModel> action_builder;
     protected Subject<ImportContext<Model, ExternalModel>> subject;
     protected IObservable<ImportContext<Model, ExternalModel>> context;
     protected Changeset<Model, Model> changeset;
@@ -20,6 +21,7 @@ public class no_changes : Specification
     void Establish()
     {
         subject = new Subject<ImportContext<Model, ExternalModel>>();
+        action_builder = new ImportActionBuilderFor<Model, ExternalModel>(subject);
         import_builder = new ImportBuilderFor<Model, ExternalModel>(subject);
         modified_model = new Model(42, "Forty Two");
         original_model = new Model(42, "Forty Two");
