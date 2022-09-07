@@ -1,7 +1,6 @@
 // Copyright (c) Aksio Insurtech. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Reflection;
 using System.Text.Json;
 using Aksio.Cratis.Events;
 using Aksio.Cratis.Execution;
@@ -43,9 +42,9 @@ public class EventSequenceForSpecifications
     {
         var json = await _serializer.Serialize(@event);
 
-        var eventTypeAttribute = @event.GetType().GetCustomAttribute<EventTypeAttribute>();
+        var eventType = @event.GetType().GetEventType();
         _appendedEvents.Add(new(
-            new(_sequenceNumber, eventTypeAttribute!.Type),
+            new(_sequenceNumber, eventType),
             new(
                 eventSourceId,
                 DateTimeOffset.UtcNow,

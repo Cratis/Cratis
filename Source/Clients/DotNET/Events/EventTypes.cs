@@ -1,7 +1,6 @@
 // Copyright (c) Aksio Insurtech. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Reflection;
 using Aksio.Cratis.Reflection;
 using Aksio.Cratis.Types;
 
@@ -25,7 +24,7 @@ public class EventTypes : IEventTypes
     {
         _typesByEventType = types.All
                         .Where(_ => _.HasAttribute<EventTypeAttribute>())
-                        .ToDictionary(_ => _.GetCustomAttribute<EventTypeAttribute>()!.Type!, _ => _);
+                        .ToDictionary(_ => _.GetEventType(), _ => _);
 
         All = _typesByEventType.Keys.ToArray();
     }
