@@ -123,7 +123,7 @@ static class Program
 
     static async Task Append(EventSequenceNumber sequenceNumber, EventSourceId eventSourceId, DateTimeOffset occurred, object content)
     {
-        var eventTypeAttribute = content.GetType().GetCustomAttribute<EventTypeAttribute>();
+        var eventTypeAttribute = content.GetType().GetEventType();
         var eventType = eventTypeAttribute!.Type;
 
         var contentAsJson = JsonSerializer.Serialize(content, _serializerOptions!);
